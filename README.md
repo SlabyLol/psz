@@ -1,3 +1,4 @@
+![PSZ LOGO]([https://github.com/SlabyLol/psz/blob/main/banner.jpeg))](https://slabylol.github.io/psz)
 # PSZ – Encrypted Project Archives
 
 **PSZ** is a simple encrypted archive format designed for projects.
