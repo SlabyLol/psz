@@ -1,0 +1,53 @@
+name: Example – Build project and create PSZ archive
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-pack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PSZ
+        run: |
+          pip install -e .
+          psz --version
+
+      # ---------------------------------------------------------------
+      # Example: pretend we built something and put it into dist/
+      # Replace this section with your real build steps.
+      # ---------------------------------------------------------------
+      - name: Create example project output
+        run: |
+          mkdir -p dist
+          echo "Hello from PSZ example build" > dist/hello.txt
+          echo "Version: 0.1.0" > dist/VERSION
+          mkdir -p dist/subdir
+          echo "nested file" > dist/subdir/data.txt
+
+      - name: Create encrypted PSZ archive
+        run: |
+          psz make dist -o release.psz
+          ls -lh release.psz release.psz-data.lor
+
+      - name: Create decrypted PSZ archive
+        run: |
+          psz open release.psz release.psz-data.lor -o extracted/
+
+      - name: Upload PSZ artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: psz-archive
+          path: |
+            release.zip
+          retention-days: 14
