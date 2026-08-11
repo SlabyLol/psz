@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSZ – Encrypted Project Archives</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d27;
+      --border: #2a2e3a;
+      --text: #e6e8ee;
+      --muted: #9aa0b0;
+      --accent: #6c8cff;
+      --accent-hover: #8aa4ff;
+      --green: #3dd68c;
+      --code-bg: #12141c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #6c8cff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 1.15rem;
+      margin-top: 0.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 1.25rem;
+      padding: 0.3rem 0.75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.25rem 0 1rem;
+      color: #fff;
+    }
+
+    p { margin-bottom: 1rem; color: var(--muted); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.25rem 0;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.75rem;
+      color: #fff;
+    }
+
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.9rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1rem;
+      color: #d4d8e2;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: #c7d2fe;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    .files {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    @media (max-width: 600px) {
+      .files { grid-template-columns: 1fr; }
+    }
+
+    .file-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+
+    .file-box .ext {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .file-box p {
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .btn {
+      display: inline-block;
+      margin: 0.4rem 0.5rem 0.4rem 0;
+      padding: 0.65rem 1.25rem;
+      background: var(--accent);
+      color: #fff !important;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none !important;
+      transition: background 0.15s;
+    }
+
+    .btn:hover { background: var(--accent-hover); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text) !important;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent) !important;
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+    }
+
+    .steps li {
+      position: relative;
+      padding-left: 2.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1.85rem;
+      height: 1.85rem;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    footer {
+      margin-top: 3.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">PSZ</div>
+      <p class="tagline">Encrypted project archives with a paired unpacker</p>
+      <div class="badge">AES-256-GCM · .psz + .psz-data.lor</div>
+    </header>
+
+    <div style="text-align:center; margin-bottom: 2.5rem;">
+      <a class="btn" href="https://github.com/SlabyLol/psz">GitHub Repository</a>
+      <a class="btn btn-outline" href="https://github.com/SlabyLol/psz-test">Test / Demo Repo</a>
+    </div>
+
+    <h2>What is PSZ?</h2>
+    <p>
+      PSZ is a simple encrypted archive format made for projects.
+      Every archive always consists of <strong>two files</strong>:
+    </p>
+
+    <div class="files">
+      <div class="file-box">
+        <div class="ext">.psz</div>
+        <p>The encrypted archive (AES-256-GCM). Contains all your files packed as tar and then encrypted.</p>
+      </div>
+      <div class="file-box">
+        <div class="ext">.psz-data.lor</div>
+        <p>The matching unpacker. Contains the key + code needed to open that specific .psz file.</p>
+      </div>
+    </div>
+
+    <p>You always need <strong>both</strong> files to extract the content.</p>
+
+    <h2>Install</h2>
+    <div class="card">
+      <pre><code>pip install git+https://github.com/SlabyLol/psz.git</code></pre>
+      <p style="margin:0; font-size:0.9rem;">Requires Python 3.9+</p>
+    </div>
+
+    <h2>Create an archive</h2>
+    <div class="card">
+      <pre><code>psz make ./my-project -o my-project.psz</code></pre>
+      <p style="margin:0;">Creates <code>my-project.psz</code> and <code>my-project.psz-data.lor</code></p>
+    </div>
+
+    <h2>Open / Extract an archive</h2>
+    <div class="card">
+      <h3>Option 1 – using the psz tool</h3>
+      <pre><code>psz open my-project.psz my-project.psz-data.lor -o extracted/</code></pre>
+
+      <h3 style="margin-top:1.5rem;">Option 2 – run the .lor file directly</h3>
+      <pre><code>python my-project.psz-data.lor my-project.psz -o extracted/</code></pre>
+      <p style="margin:0; font-size:0.9rem;">The .lor file is a self-contained Python script that already knows the key.</p>
+    </div>
+
+    <h2>Quick example</h2>
+    <ol class="steps">
+      <li>
+        <strong>Create</strong>
+        <pre><code>psz make ./dist -o release.psz</code></pre>
+      </li>
+      <li>
+        <strong>Share both files</strong> (or keep the .lor private if the content is sensitive)
+      </li>
+      <li>
+        <strong>Open later</strong>
+        <pre><code>psz open release.psz release.psz-data.lor -o out/</code></pre>
+      </li>
+    </ol>
+
+    <h2>Docker</h2>
+    <div class="card">
+      <pre><code>docker build -t psz .
+docker run --rm -v $(pwd):/data psz make /data/myfolder -o /data/out.psz</code></pre>
+    </div>
+
+    <h2>GitHub Actions</h2>
+    <p>
+      Use PSZ in your CI to create encrypted artifacts.
+      See the example workflow in the repository and the live demo in
+      <a href="https://github.com/SlabyLol/psz-test">psz-test</a>.
+    </p>
+
+    <h2>Security notes</h2>
+    <div class="card">
+      <ul style="padding-left:1.25rem; color:var(--muted);">
+        <li>Uses AES-256-GCM (authenticated encryption)</li>
+        <li>A new random key is generated for every archive</li>
+        <li>The key lives only inside the matching .lor file</li>
+        <li>Do not publish the .lor if the content should stay private</li>
+        <li>Path traversal protection is applied when extracting</li>
+      </ul>
+    </div>
+
+    <footer>
+      <p>
+        <a href="https://github.com/SlabyLol/psz">github.com/SlabyLol/psz</a><br />
+        MIT License · Made for projects
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
