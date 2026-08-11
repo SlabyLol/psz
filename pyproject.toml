@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "psz"
-version = "0.1.0"
+version = "0.67.0"
 description = "Encrypted project archive format with paired unpacker (.psz + .psz-data.lor)"
 readme = "README.md"
 requires-python = ">=3.9"
