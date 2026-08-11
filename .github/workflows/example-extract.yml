@@ -1,4 +1,4 @@
-name: Example – Build project and create PSZ archive
+name: Example – Build project and decrypt PSZ archive
 
 on:
   push:
@@ -49,5 +49,5 @@ jobs:
         with:
           name: psz-archive
           path: |
-            release.zip
+            extracted
           retention-days: 14
