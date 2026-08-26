@@ -7,13 +7,16 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .core import create_archive, open_archive
+from .core import SUPPORTED_LANGUAGES, create_archive, open_archive
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="psz",
-        description="PSZ – Encrypted project archives with paired unpacker (.psz + .psz-data.lor)",
+        description=(
+            "PSZ – Encrypted project archives with paired unpackers "
+            "(.psz + Python / PHP / HTML)"
+        ),
     )
     parser.add_argument(
         "--version", action="version", version=f"psz {__version__}"
@@ -24,7 +27,7 @@ def main(argv: list[str] | None = None) -> int:
     # ---- make ----
     p_make = sub.add_parser(
         "make",
-        help="Create an encrypted .psz archive + matching .psz-data.lor unpacker",
+        help="Create an encrypted .psz archive + matching unpackers",
     )
     p_make.add_argument(
         "source",
@@ -39,16 +42,28 @@ def main(argv: list[str] | None = None) -> int:
         help="Output .psz file (e.g. project.psz)",
     )
     p_make.add_argument(
+        "--lang",
+        "--language",
+        dest="languages",
+        action="append",
+        choices=list(SUPPORTED_LANGUAGES) + ["all"],
+        default=None,
+        help=(
+            "Unpacker language(s) to generate: python, php, html, or all. "
+            "Can be repeated. Default: all"
+        ),
+    )
+    p_make.add_argument(
         "--lor",
         type=Path,
         default=None,
-        help="Custom path for the .lor file (default: <output>.psz-data.lor)",
+        help="Custom path for a single unpacker (only when one --lang is set)",
     )
 
     # ---- open ----
     p_open = sub.add_parser(
         "open",
-        help="Open/decrypt a .psz archive using its matching .psz-data.lor",
+        help="Open/decrypt a .psz archive using a matching unpacker file",
     )
     p_open.add_argument(
         "archive",
@@ -58,7 +73,7 @@ def main(argv: list[str] | None = None) -> int:
     p_open.add_argument(
         "lor",
         type=Path,
-        help="The matching .psz-data.lor unpacker file",
+        help="Matching unpacker (.lor / .php / .html) that embeds the key",
     )
     p_open.add_argument(
         "-o",
@@ -72,18 +87,32 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.command == "make":
-            psz_path, lor_path = create_archive(
+            langs = args.languages
+            if langs is None or "all" in langs:
+                languages = list(SUPPORTED_LANGUAGES)
+            else:
+                languages = langs
+
+            psz_path, unpackers = create_archive(
                 source=args.source,
                 output_psz=args.output,
                 lor_path=args.lor,
+                languages=languages,
             )
             print(f"Created: {psz_path}")
-            print(f"Created: {lor_path}")
+            for u in unpackers:
+                print(f"Created: {u}")
             print()
             print("To extract later:")
-            print(f"  psz open {psz_path.name} {lor_path.name} -o output_dir")
-            print(f"  # or directly:")
-            print(f"  python {lor_path.name} {psz_path.name} -o output_dir")
+            print(f"  psz open {psz_path.name} <unpacker> -o output_dir")
+            for u in unpackers:
+                name = u.name
+                if name.endswith(".lor"):
+                    print(f"  python {name} {psz_path.name} -o output_dir")
+                elif name.endswith(".php"):
+                    print(f"  php {name} {psz_path.name} -o output_dir")
+                elif name.endswith(".html"):
+                    print(f"  open {name} in a browser and select {psz_path.name}")
             return 0
 
         if args.command == "open":
