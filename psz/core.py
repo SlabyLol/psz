@@ -1,8 +1,10 @@
 """
 Core logic for creating and opening PSZ archives.
 
-.psz          = AES-256-GCM encrypted tar archive
-.psz-data.lor = self-contained Python unpacker script that holds the key
+.psz              = AES-256-GCM encrypted tar archive
+.psz-data.lor     = Python unpacker (key embedded)
+.psz-data.php     = PHP unpacker (key embedded)
+.psz-data.html    = Browser (HTML+JS) unpacker (key embedded)
 """
 
 from __future__ import annotations
@@ -11,15 +13,23 @@ import io
 import os
 import tarfile
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+from .unpackers import (
+    _generate_python_lor,
+    _generate_php_lor,
+    _generate_js_lor,
+    _generate_html_lor,
+)
 
 MAGIC = b"PSZ1"
 VERSION = 1
 NONCE_SIZE = 12
 KEY_SIZE = 32  # AES-256
+
+SUPPORTED_LANGUAGES = ("python", "php", "js", "html")
 
 
 def _pack_directory(source: Path) -> bytes:
@@ -46,6 +56,7 @@ def _unpack_tar(data: bytes, dest: Path) -> None:
     dest.mkdir(parents=True, exist_ok=True)
     buf = io.BytesIO(data)
     with tarfile.open(fileobj=buf, mode="r") as tar:
+
         def is_safe(member: tarfile.TarInfo) -> bool:
             name = member.name
             if name.startswith("/") or ".." in Path(name).parts:
@@ -57,56 +68,96 @@ def _unpack_tar(data: bytes, dest: Path) -> None:
                 tar.extract(member, path=dest)
 
 
+def _lor_path_for(output_psz: Path, lang: str) -> Path:
+    """Default path for a language-specific unpacker next to the .psz."""
+    if lang == "python":
+        return Path(str(output_psz) + "-data.lor")
+    if lang == "php":
+        return Path(str(output_psz) + "-data.php")
+    if lang == "js":
+        return Path(str(output_psz) + "-data.js")
+    if lang == "html":
+        return Path(str(output_psz) + "-data.html")
+    raise ValueError(f"Unsupported language: {lang}")
+
+
 def create_archive(
     source: Path,
     output_psz: Path,
     lor_path: Optional[Path] = None,
-) -> tuple[Path, Path]:
+    languages: Optional[Iterable[str]] = None,
+) -> tuple[Path, list[Path]]:
     """
-    Create an encrypted .psz archive and a matching .psz-data.lor unpacker.
+    Create an encrypted .psz archive and matching unpackers.
 
-    Returns (psz_path, lor_path)
+    languages: iterable of "python", "php", "js", "html". Default: all.
+    lor_path: only used when a single language is requested (legacy).
+
+    Returns (psz_path, list_of_unpacker_paths)
     """
     source = source.resolve()
     if not source.is_dir():
         raise ValueError(f"Source must be a directory: {source}")
 
     output_psz = output_psz.resolve()
-    if lor_path is None:
-        lor_path = output_psz.with_suffix(output_psz.suffix + "-data.lor")
+    if languages is None:
+        languages = list(SUPPORTED_LANGUAGES)
     else:
-        lor_path = lor_path.resolve()
+        languages = [lang.lower().strip() for lang in languages]
+        for lang in languages:
+            if lang not in SUPPORTED_LANGUAGES:
+                raise ValueError(
+                    f"Unsupported language '{lang}'. "
+                    f"Supported: {', '.join(SUPPORTED_LANGUAGES)}"
+                )
 
-    # 1. Pack
     plain = _pack_directory(source)
 
-    # 2. Encrypt
     key = AESGCM.generate_key(bit_length=256)
     aesgcm = AESGCM(key)
     nonce = os.urandom(NONCE_SIZE)
     ciphertext = aesgcm.encrypt(nonce, plain, None)
 
-    # 3. Write .psz
-    # Format: MAGIC (4) + VERSION (1) + nonce (12) + ciphertext
     with open(output_psz, "wb") as f:
         f.write(MAGIC)
         f.write(bytes([VERSION]))
         f.write(nonce)
         f.write(ciphertext)
 
-    # 4. Generate self-contained .lor unpacker script
     key_hex = key.hex()
-    lor_content = _generate_lor_script(key_hex, output_psz.name)
+    archive_name = output_psz.name
+    unpackers: list[Path] = []
 
-    with open(lor_path, "w", encoding="utf-8") as f:
-        f.write(lor_content)
+    for lang in languages:
+        if lor_path is not None and len(languages) == 1:
+            path = lor_path.resolve()
+        else:
+            path = _lor_path_for(output_psz, lang)
 
-    try:
-        os.chmod(lor_path, 0o755)
-    except OSError:
-        pass
+        if lang == "python":
+            content = _generate_python_lor(key_hex, archive_name)
+            path.write_text(content, encoding="utf-8")
+            try:
+                os.chmod(path, 0o755)
+            except OSError:
+                pass
+        elif lang == "php":
+            content = _generate_php_lor(key_hex, archive_name)
+            path.write_text(content, encoding="utf-8")
+        elif lang == "js":
+            content = _generate_js_lor(key_hex, archive_name)
+            path.write_text(content, encoding="utf-8")
+            try:
+                os.chmod(path, 0o755)
+            except OSError:
+                pass
+        elif lang == "html":
+            content = _generate_html_lor(key_hex, archive_name)
+            path.write_text(content, encoding="utf-8")
 
-    return output_psz, lor_path
+        unpackers.append(path)
+
+    return output_psz, unpackers
 
 
 def open_archive(
@@ -115,8 +166,7 @@ def open_archive(
     output_dir: Path,
 ) -> None:
     """
-    Open a .psz archive using the matching .psz-data.lor.
-    The .lor must contain the correct key for this archive.
+    Open a .psz archive using a matching unpacker (.lor / .php / .js / .html).
     """
     psz_path = psz_path.resolve()
     lor_path = lor_path.resolve()
@@ -127,7 +177,7 @@ def open_archive(
     if not lor_path.is_file():
         raise FileNotFoundError(f"Unpacker not found: {lor_path}")
 
-    key = _extract_key_from_lor(lor_path)
+    key = _extract_key_from_unpacker(lor_path)
 
     with open(psz_path, "rb") as f:
         data = f.read()
@@ -147,121 +197,27 @@ def open_archive(
         plain = aesgcm.decrypt(nonce, ciphertext, None)
     except Exception as e:
         raise ValueError(
-            "Decryption failed. Wrong .lor file or corrupted archive."
+            "Decryption failed. Wrong unpacker file or corrupted archive."
         ) from e
 
     _unpack_tar(plain, output_dir)
 
 
-def _extract_key_from_lor(lor_path: Path) -> bytes:
-    """Parse the key out of a generated .lor script."""
-    text = lor_path.read_text(encoding="utf-8")
+def _extract_key_from_unpacker(path: Path) -> bytes:
+    """Parse the key from a generated unpacker (Python / PHP / JS / HTML)."""
+    text = path.read_text(encoding="utf-8")
     for line in text.splitlines():
-        line = line.strip()
-        if line.startswith("KEY_HEX"):
-            parts = line.split("=", 1)
-            if len(parts) == 2:
-                raw = parts[1].strip().strip('"').strip("'")
-                return bytes.fromhex(raw)
-    raise ValueError("Could not find KEY_HEX in the .lor file")
-
-
-def _generate_lor_script(key_hex: str, archive_name: str) -> str:
-    """Generate a self-contained Python unpacker script."""
-    return f'''#!/usr/bin/env python3
-"""
-PSZ Data Loader / Unpacker
-This file was generated specifically for the archive: {archive_name}
-
-Usage:
-    python {Path(archive_name).stem}.psz-data.lor {archive_name} -o output_dir
-
-Or with the main psz tool:
-    psz open {archive_name} this_file.lor -o output_dir
-"""
-
-from __future__ import annotations
-
-import argparse
-import io
-import os
-import sys
-import tarfile
-from pathlib import Path
-
-# Embedded key for this specific archive (do not share publicly if sensitive)
-KEY_HEX = "{key_hex}"
-
-MAGIC = b"PSZ1"
-NONCE_SIZE = 12
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Unpack a PSZ encrypted archive (paired with this .lor file)"
-    )
-    parser.add_argument("archive", type=Path, help="Path to the .psz file")
-    parser.add_argument(
-        "-o", "--output",
-        type=Path,
-        default=Path("extracted"),
-        help="Output directory (default: ./extracted)"
-    )
-    args = parser.parse_args()
-
-    psz_path = args.archive.resolve()
-    output_dir = args.output.resolve()
-
-    if not psz_path.is_file():
-        print(f"Error: archive not found: {{psz_path}}", file=sys.stderr)
-        return 1
-
-    key = bytes.fromhex(KEY_HEX)
-
-    with open(psz_path, "rb") as f:
-        data = f.read()
-
-    if not data.startswith(MAGIC):
-        print("Error: not a valid PSZ archive", file=sys.stderr)
-        return 1
-
-    version = data[4]
-    nonce = data[5:5 + NONCE_SIZE]
-    ciphertext = data[5 + NONCE_SIZE:]
-
-    try:
-        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-        aesgcm = AESGCM(key)
-        plain = aesgcm.decrypt(nonce, ciphertext, None)
-    except ImportError:
-        print(
-            "Error: 'cryptography' package is required.\\n"
-            "Install with:  pip install cryptography",
-            file=sys.stderr,
-        )
-        return 1
-    except Exception:
-        print(
-            "Error: decryption failed. "
-            "This .lor file does not match the archive or the file is corrupted.",
-            file=sys.stderr,
-        )
-        return 1
-
-    # Extract
-    output_dir.mkdir(parents=True, exist_ok=True)
-    buf = io.BytesIO(plain)
-    with tarfile.open(fileobj=buf, mode="r") as tar:
-        for member in tar.getmembers():
-            name = member.name
-            if name.startswith("/") or ".." in Path(name).parts:
-                continue  # skip unsafe paths
-            tar.extract(member, path=output_dir)
-
-    print(f"Successfully extracted to: {{output_dir}}")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-'''
+        stripped = line.strip()
+        if "KEY_HEX" not in stripped and "key_hex" not in stripped:
+            continue
+        for quote in ('"', "'"):
+            if quote not in stripped:
+                continue
+            parts = stripped.split(quote)
+            for part in parts:
+                candidate = part.strip()
+                if len(candidate) == 64 and all(
+                    c in "0123456789abcdefABCDEF" for c in candidate
+                ):
+                    return bytes.fromhex(candidate)
+    raise ValueError("Could not find KEY_HEX in the unpacker file")
