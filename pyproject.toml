@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "psz"
-version = "0.68.0"
-description = "Encrypted project archive format with multi-language paired unpackers (.psz + Python/PHP/HTML)"
+version = "0.67.0"
+description = "Encrypted project archive format with paired unpacker (.psz + .psz-data.lor)"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
