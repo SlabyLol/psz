@@ -7,75 +7,61 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .core import SUPPORTED_LANGUAGES, create_archive, open_archive
+from .core import (
+    SUPPORTED_LANGUAGES,
+    create_archive,
+    list_archive_members,
+    open_archive,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="psz",
         description=(
-            "PSZ – Encrypted project archives with paired unpackers "
-            "(.psz + Python / PHP / JS / HTML)"
+            "PSZ – Encrypted archives with multi-language unpackers "
+            "(Python / PHP / JS / HTML). "
+            "Always need: .psz + matching unpacker (.lor/.php/.js/.html)."
         ),
     )
-    parser.add_argument(
-        "--version", action="version", version=f"psz {__version__}"
-    )
-
+    parser.add_argument("--version", action="version", version=f"psz {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_make = sub.add_parser(
-        "make",
-        help="Create an encrypted .psz archive + matching unpackers",
-    )
-    p_make.add_argument("source", type=Path, help="Source directory to pack")
+    p_make = sub.add_parser("make", help="Pack file(s)/dir into .psz + unpackers")
+    p_make.add_argument("sources", nargs="+", type=Path, help="File(s) and/or directory")
+    p_make.add_argument("-o", "--output", type=Path, required=True, help="Output .psz")
     p_make.add_argument(
-        "-o", "--output", type=Path, required=True, help="Output .psz file (e.g. project.psz)",
+        "--lang", "--language", dest="languages", action="append",
+        choices=list(SUPPORTED_LANGUAGES) + ["all"], default=None,
+        help="python, php, js, html, or all (default: all)",
     )
-    p_make.add_argument(
-        "--lang",
-        "--language",
-        dest="languages",
+    p_make.add_argument("--lor", type=Path, default=None, help="Custom single unpacker path")
+
+    p_open = sub.add_parser("open", help="Extract (needs .psz + unpacker)")
+    p_open.add_argument("archive", type=Path, help=".psz archive")
+    p_open.add_argument("unpacker", type=Path, help="Matching unpacker with the key")
+    p_open.add_argument("-o", "--output", type=Path, default=Path("extracted"))
+    p_open.add_argument(
+        "-m", "--member",
+        dest="members",
         action="append",
-        choices=list(SUPPORTED_LANGUAGES) + ["all"],
         default=None,
-        help=(
-            "Unpacker language(s) to generate: python, php, js, html, or all. "
-            "Can be repeated. Default: all"
-        ),
-    )
-    p_make.add_argument(
-        "--lor",
-        type=Path,
-        default=None,
-        help="Custom path for a single unpacker (only when one --lang is set)",
+        help="Extract only this path from inside the archive (repeatable)",
     )
 
-    p_open = sub.add_parser(
-        "open",
-        help="Open/decrypt a .psz archive using a matching unpacker file",
-    )
-    p_open.add_argument("archive", type=Path, help="The .psz archive file")
-    p_open.add_argument(
-        "lor", type=Path, help="Matching unpacker (.lor / .php / .js / .html) that embeds the key",
-    )
-    p_open.add_argument(
-        "-o", "--output", type=Path, default=Path("extracted"),
-        help="Output directory (default: ./extracted)",
-    )
+    p_list = sub.add_parser("list", help="List contents (needs .psz + unpacker)")
+    p_list.add_argument("archive", type=Path)
+    p_list.add_argument("unpacker", type=Path)
 
     args = parser.parse_args(argv)
 
     try:
         if args.command == "make":
             langs = args.languages
-            if langs is None or "all" in langs:
-                languages = list(SUPPORTED_LANGUAGES)
-            else:
-                languages = langs
-
+            languages = list(SUPPORTED_LANGUAGES) if (langs is None or "all" in langs) else langs
+            sources = list(args.sources)
             psz_path, unpackers = create_archive(
-                source=args.source,
+                source=sources if len(sources) > 1 else sources[0],
                 output_psz=args.output,
                 lor_path=args.lor,
                 languages=languages,
@@ -84,33 +70,43 @@ def main(argv: list[str] | None = None) -> int:
             for u in unpackers:
                 print(f"Created: {u}")
             print()
-            print("To extract later:")
-            print(f"  psz open {psz_path.name} <unpacker> -o output_dir")
+            print("Keep the .psz AND at least one unpacker together.")
+            print("Extract examples:")
             for u in unpackers:
-                name = u.name
-                if name.endswith(".lor"):
-                    print(f"  python {name} {psz_path.name} -o output_dir")
-                elif name.endswith(".php"):
-                    print(f"  php {name} {psz_path.name} -o output_dir")
-                elif name.endswith(".js"):
-                    print(f"  node {name} {psz_path.name} -o output_dir")
-                elif name.endswith(".html"):
-                    print(f"  open {name} in a browser and select {psz_path.name}")
+                n = u.name
+                if n.endswith(".lor"):
+                    print(f"  python {n} {psz_path.name} -o out/")
+                elif n.endswith(".php"):
+                    print(f"  php {n} {psz_path.name} -o out/")
+                elif n.endswith(".js"):
+                    print(f"  node {n} {psz_path.name} -o out/")
+                elif n.endswith(".html"):
+                    print(f"  open {n} → select {psz_path.name}")
+            print(f"  psz open {psz_path.name} <unpacker> -o out/")
+            print(f"  psz list {psz_path.name} <unpacker>")
             return 0
 
         if args.command == "open":
-            open_archive(
+            members = args.members or None
+            extracted = open_archive(
                 psz_path=args.archive,
-                lor_path=args.lor,
+                lor_path=args.unpacker,
                 output_dir=args.output,
+                members=members,
             )
-            print(f"Extracted to: {args.output.resolve()}")
+            print(f"Extracted {len(extracted)} item(s) → {args.output.resolve()}")
+            for name in extracted:
+                print(f"  {name}")
+            return 0
+
+        if args.command == "list":
+            names = list_archive_members(args.archive, args.unpacker)
+            print("(empty)" if not names else "\n".join(names))
             return 0
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
-
     return 0
 
 
