@@ -20,13 +20,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Security :: Cryptography",
     "Topic :: System :: Archiving",
-    "Topic :: Utilities",
 ]
 dependencies = [
     "cryptography>=42.0.0",
@@ -38,7 +33,6 @@ psz = "psz.cli:main"
 [project.urls]
 Homepage = "https://github.com/SlabyLol/psz"
 Repository = "https://github.com/SlabyLol/psz"
-Issues = "https://github.com/SlabyLol/psz/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
