@@ -1,58 +1,42 @@
-# PSZ Examples – Load / execute a `.psz`
+# PSZ Examples
 
-A `.psz` is **encrypted**. To open it you always need:
+Always: **`name.psz`** + **`name.psz-data.lor`** (key lives in the `.lor`).
 
-1. the **`.psz`** file (data)
-2. a matching **`.lor`** unpacker (contains the key)
-
-All unpackers end with **`.lor`**:
-
-| File | Loads `.psz` with |
-|------|-------------------|
-| `demo.psz-data.lor` | **Python** |
-| `demo.psz-data.php.lor` | **PHP** |
-| `demo.psz-data.js.lor` | **Node.js** |
-| `demo.psz-data.html.lor` | **Browser** |
-
----
-
-## 1. Python – load `.psz`
+## Python package + CLI
 
 ```bash
-cd examples
-python3 demo.psz-data.lor demo.psz -o out-python/
-```
-
-```bash
-psz open demo.psz demo.psz-data.lor -o out-python/
+pip install -e .
+psz make sample-project -o demo.psz
 psz list demo.psz demo.psz-data.lor
+psz open demo.psz demo.psz-data.lor -o out/
 ```
 
-## 2. PHP – load `.psz`
+### Package API
 
-```bash
-php demo.psz-data.php.lor demo.psz -o out-php/
+```python
+from pathlib import Path
+from psz import open_archive, list_archive_members, create_archive
+
+create_archive(Path("sample-project"), Path("demo.psz"))
+open_archive(Path("demo.psz"), Path("demo.psz-data.lor"), Path("out"))
 ```
 
-## 3. JavaScript (Node) – load `.psz`
+## Extractors
+
+| File | Mode |
+|------|------|
+| `extractors/psz-extractor1.py` | Direct – uses **psz package** |
+| `extractors/psz-extractor2.py` | File args – **psz package** |
+| `extractors/psz-extractor3.py` | list/open/`-m` – **psz package** |
+| `extractors/psz-extractor1.php` | Direct load |
+| `extractors/psz-extractor2.php` | Selection / upload |
+| `extractors/psz-extractor3.php` | Full CLI |
+| `extractors/psz-extractor1.js` | Direct |
+| `extractors/psz-extractor2.js` | File args |
+| `extractors/psz-extractor2.html` | Browser selection |
 
 ```bash
-node demo.psz-data.js.lor demo.psz -o out-js/
-```
-
-## 4. HTML – load `.psz` in the browser
-
-1. Open `demo.psz-data.html.lor` in the browser
-2. Select **`demo.psz`**
-3. Download the decrypted `.tar`
-
----
-
-## Quick scripts (load demo.psz)
-
-```bash
-bash scripts/run-python.sh
-bash scripts/run-php.sh
-bash scripts/run-js.sh
-bash scripts/run-all.sh
+python3 extractors/psz-extractor1.py
+php extractors/psz-extractor1.php
+node extractors/psz-extractor1.js
 ```

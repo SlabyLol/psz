@@ -1,44 +1,61 @@
 # PSZ – Encrypted Project Archives
 
-AES-256-GCM encrypted archives with **paired multi-language unpackers**.
+AES-256-GCM archives with a paired **`.psz-data.lor`** key file.
 
-**You always need both:** the `.psz` **and** a matching **`.lor`** unpacker (key inside).
+Always need **both**:
+- `name.psz` – encrypted data
+- `name.psz-data.lor` – unpacker / key (same filename for every language)
 
-All languages use the **`.lor`** extension:
-- Python: `name.psz-data.lor`
-- PHP: `name.psz-data.php.lor`
-- JS: `name.psz-data.js.lor`
-- HTML: `name.psz-data.html.lor`
-
-## Install
+## Python package + CLI
 
 ```bash
 pip install -e .
-# needs: pip install cryptography
+# requires: cryptography
 ```
 
-## Commands
+### CLI
 
 ```bash
-# Pack folder / single file / multiple paths
 psz make ./project -o release.psz
-psz make readme.txt -o doc.psz
-psz make a.txt b.txt src/ -o bundle.psz --lang all
+psz make ./project -o release.psz --lang php
+psz make file.txt -o one.psz
 
-# List (needs .psz + .lor)
 psz list release.psz release.psz-data.lor
-
-# Load / extract (the .lor loads the .psz)
-python release.psz-data.lor release.psz -o out/
-php release.psz-data.php.lor release.psz -o out/
-node release.psz-data.js.lor release.psz -o out/
 psz open release.psz release.psz-data.lor -o out/
-
-# Extract only specific members
 psz open release.psz release.psz-data.lor -o out/ -m path/inside.txt
 ```
 
-See [examples/](examples/) for runnable demos that **load** `demo.psz`.
+### Package API
+
+```python
+from pathlib import Path
+from psz import create_archive, open_archive, list_archive_members
+
+create_archive(Path("project"), Path("release.psz"))
+list_archive_members(Path("release.psz"), Path("release.psz-data.lor"))
+open_archive(Path("release.psz"), Path("release.psz-data.lor"), Path("out"))
+```
+
+## Languages for `.psz-data.lor` content
+
+```bash
+psz make ./project -o r.psz --lang python   # default
+psz make ./project -o r.psz --lang php
+psz make ./project -o r.psz --lang js
+psz make ./project -o r.psz --lang html
+```
+
+Name is always **`r.psz-data.lor`**.
+
+## Examples
+
+See [examples/](examples/).
+
+```bash
+python3 examples/extractors/psz-extractor1.py
+php examples/extractors/psz-extractor1.php
+node examples/extractors/psz-extractor1.js
+```
 
 ## License
 
