@@ -1,5 +1,7 @@
 # PSZ – Encrypted Project Archives
 
+# !BETA functions!
+
 AES-256-GCM archives with a paired **`.psz-data.lor`** key file.
 
 Always need **both**:
