@@ -1,3 +1,4 @@
+[![PSZ BANNER](https://github.com/SlabyLol/psz/blob/main/banner.png)](https://slabylol.github.io/psz)
 # PSZ – Encrypted Project Archives
 
 # !BETA functions!
@@ -11,8 +12,9 @@ Always need **both**:
 ## Python package + CLI
 
 ```bash
+pip install git+https://github.com/SlabyLol/psz.git
+# or after cloning:
 pip install -e .
-# requires: cryptography
 ```
 
 ### CLI
