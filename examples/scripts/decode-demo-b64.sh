@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# Decode examples/demo.psz.b64 -> examples/demo.psz (if b64 file is present)
+# Rebuild demo.psz from base64 parts on GitHub
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [[ ! -f demo.psz.b64 ]]; then
-  echo "demo.psz.b64 missing – run: bash scripts/make-demo.sh"
-  exit 1
-fi
-base64 -d demo.psz.b64 > demo.psz
+cat demo.psz.b64.part0 demo.psz.b64.part1 demo.psz.b64.part2 | base64 -d > demo.psz
 echo "Wrote demo.psz ($(wc -c < demo.psz) bytes)"
+python3 -c "import pathlib; d=pathlib.Path('demo.psz').read_bytes(); assert d[:4]==b'PSZ1', d[:4]; print('PSZ1 OK')"
