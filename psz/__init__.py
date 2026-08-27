@@ -17,7 +17,7 @@ from .core import (
     open_archive,
 )
 
-__version__ = "0.68.0"
+__version__ = "1.0.9beta"
 __all__ = [
     "__version__",
     "SUPPORTED_LANGUAGES",
