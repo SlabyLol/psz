@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PSZ Extractor 2 – Select files</title>
+<style>
+body{margin:0;min-height:100vh;font-family:system-ui;background:#0f1115;color:#e8eaed;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.card{background:#1a1d24;border-radius:12px;padding:1.75rem;max-width:28rem;width:100%}
+label{display:block;margin:.75rem 0 .25rem;color:#9aa0a6;font-size:.9rem}
+input[type=file]{width:100%;margin-bottom:.5rem}
+button{width:100%;padding:.75rem;border:0;border-radius:8px;background:#7c9cff;color:#0a0c10;font-weight:600;cursor:pointer;margin-top:1rem}
+#log{margin-top:1rem;font-family:monospace;font-size:.8rem;color:#9aa0a6;white-space:pre-wrap}
+#log.ok{color:#3dd68c}#log.err{color:#ff6b6b}
+a{color:#7c9cff}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>PSZ Extractor 2</h1>
+  <p style="color:#9aa0a6;font-size:.9rem">Select <strong>.psz</strong> and <strong>.psz-data.lor</strong></p>
+  <label>.psz archive</label>
+  <input type="file" id="psz" accept=".psz,application/octet-stream">
+  <label>.psz-data.lor unpacker</label>
+  <input type="file" id="lor" accept=".lor,text/plain,.txt">
+  <button type="button" id="btn">Decrypt &amp; download .tar</button>
+  <div id="log"></div>
+  <a id="dl" style="display:none" download="extracted.tar">Download extracted.tar</a>
+</div>
+<script>
+function log(msg, cls){ const el=document.getElementById('log'); el.textContent=msg; el.className=cls||''; }
+function findKey(text){
+  const m = text.match(/KEY_HEX\s*=\s*["']([0-9a-fA-F]{64})["']/)
+    || text.match(/define\(\s*['"]KEY_HEX['"]\s*,\s*['"]([0-9a-fA-F]{64})['"]/);
+  if(!m) throw new Error('KEY_HEX not found in .lor');
+  const out=new Uint8Array(32);
+  for(let i=0;i<32;i++) out[i]=parseInt(m[1].substr(i*2,2),16);
+  return out;
+}
+document.getElementById('btn').onclick = async () => {
+  const pszF=document.getElementById('psz').files[0];
+  const lorF=document.getElementById('lor').files[0];
+  if(!pszF||!lorF){ log('Select both files.', 'err'); return; }
+  log('Decrypting…');
+  try {
+    const key = findKey(await lorF.text());
+    const data = new Uint8Array(await pszF.arrayBuffer());
+    if(data[0]!==0x50||data[1]!==0x53||data[2]!==0x5a||data[3]!==0x31) throw new Error('Not a valid PSZ');
+    const nonce=data.slice(5,17), ct=data.slice(17);
+    const cryptoKey=await crypto.subtle.importKey('raw', key, {name:'AES-GCM'}, false, ['decrypt']);
+    const plain=await crypto.subtle.decrypt({name:'AES-GCM', iv:nonce, tagLength:128}, cryptoKey, ct);
+    const url=URL.createObjectURL(new Blob([plain],{type:'application/x-tar'}));
+    const dl=document.getElementById('dl');
+    dl.href=url; dl.download=(pszF.name.replace(/\.psz$/i,'')||'extracted')+'.tar'; dl.style.display='inline-block';
+    log('OK – download the .tar', 'ok');
+  } catch(e){ log('Error: '+(e.message||e), 'err'); }
+};
+</script>
+</body>
+</html>
