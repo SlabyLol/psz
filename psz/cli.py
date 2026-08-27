@@ -21,13 +21,13 @@ def main(argv: list[str] | None = None) -> int:
         description=(
             "PSZ – Encrypted archives with multi-language unpackers "
             "(Python / PHP / JS / HTML). "
-            "Always need: .psz + matching unpacker (.lor/.php/.js/.html)."
+            "Always need: .psz + matching .lor unpacker."
         ),
     )
     parser.add_argument("--version", action="version", version=f"psz {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_make = sub.add_parser("make", help="Pack file(s)/dir into .psz + unpackers")
+    p_make = sub.add_parser("make", help="Pack file(s)/dir into .psz + .lor unpackers")
     p_make.add_argument("sources", nargs="+", type=Path, help="File(s) and/or directory")
     p_make.add_argument("-o", "--output", type=Path, required=True, help="Output .psz")
     p_make.add_argument(
@@ -37,19 +37,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_make.add_argument("--lor", type=Path, default=None, help="Custom single unpacker path")
 
-    p_open = sub.add_parser("open", help="Extract (needs .psz + unpacker)")
+    p_open = sub.add_parser("open", help="Extract (needs .psz + .lor unpacker)")
     p_open.add_argument("archive", type=Path, help=".psz archive")
-    p_open.add_argument("unpacker", type=Path, help="Matching unpacker with the key")
+    p_open.add_argument("unpacker", type=Path, help="Matching .lor unpacker with the key")
     p_open.add_argument("-o", "--output", type=Path, default=Path("extracted"))
     p_open.add_argument(
-        "-m", "--member",
-        dest="members",
-        action="append",
-        default=None,
+        "-m", "--member", dest="members", action="append", default=None,
         help="Extract only this path from inside the archive (repeatable)",
     )
 
-    p_list = sub.add_parser("list", help="List contents (needs .psz + unpacker)")
+    p_list = sub.add_parser("list", help="List contents (needs .psz + .lor)")
     p_list.add_argument("archive", type=Path)
     p_list.add_argument("unpacker", type=Path)
 
@@ -70,20 +67,20 @@ def main(argv: list[str] | None = None) -> int:
             for u in unpackers:
                 print(f"Created: {u}")
             print()
-            print("Keep the .psz AND at least one unpacker together.")
-            print("Extract examples:")
+            print("Keep the .psz AND at least one .lor unpacker together.")
+            print("Load / extract:")
             for u in unpackers:
                 n = u.name
-                if n.endswith(".lor"):
-                    print(f"  python {n} {psz_path.name} -o out/")
-                elif n.endswith(".php"):
+                if n.endswith(".php.lor"):
                     print(f"  php {n} {psz_path.name} -o out/")
-                elif n.endswith(".js"):
+                elif n.endswith(".js.lor"):
                     print(f"  node {n} {psz_path.name} -o out/")
-                elif n.endswith(".html"):
-                    print(f"  open {n} → select {psz_path.name}")
-            print(f"  psz open {psz_path.name} <unpacker> -o out/")
-            print(f"  psz list {psz_path.name} <unpacker>")
+                elif n.endswith(".html.lor"):
+                    print(f"  open {n} in browser → select {psz_path.name}")
+                elif n.endswith(".lor"):
+                    print(f"  python {n} {psz_path.name} -o out/")
+            print(f"  psz open {psz_path.name} <unpacker.lor> -o out/")
+            print(f"  psz list {psz_path.name} <unpacker.lor>")
             return 0
 
         if args.command == "open":
