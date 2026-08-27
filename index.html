@@ -23,7 +23,6 @@
     --text: #f1f3f7;
     --muted: #9299a8;
     --dim: #5d6472;
-    --accent: #8da7ff;
 }
 
 html {
@@ -55,15 +54,8 @@ a {
     text-decoration: none;
 }
 
-code,
-pre {
-    font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        Monaco,
-        Consolas,
-        monospace;
+button {
+    font: inherit;
 }
 
 .container {
@@ -117,6 +109,12 @@ nav {
     font: 700 13px monospace;
 }
 
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
 .nav-links {
     display: flex;
     align-items: center;
@@ -127,6 +125,80 @@ nav {
 }
 
 .nav-links a:hover {
+    color: var(--text);
+}
+
+/* LANGUAGE */
+
+.language {
+    position: relative;
+}
+
+.language-button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 7px 10px;
+
+    border: 1px solid var(--border);
+    border-radius: 7px;
+
+    background: #11141b;
+    color: var(--muted);
+
+    cursor: pointer;
+
+    font-size: 13px;
+}
+
+.language-button:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+}
+
+.language-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+
+    min-width: 130px;
+
+    padding: 5px;
+
+    border: 1px solid var(--border);
+    border-radius: 9px;
+
+    background: #11141b;
+    box-shadow: 0 14px 40px rgba(0,0,0,.35);
+
+    display: none;
+}
+
+.language.open .language-menu {
+    display: block;
+}
+
+.language-option {
+    width: 100%;
+
+    padding: 8px 10px;
+
+    border: 0;
+    border-radius: 6px;
+
+    background: transparent;
+    color: var(--muted);
+
+    text-align: left;
+    cursor: pointer;
+
+    font-size: 13px;
+}
+
+.language-option:hover,
+.language-option.active {
+    background: #191d26;
     color: var(--text);
 }
 
@@ -484,7 +556,7 @@ tr:last-child td {
     font-size: 13px;
 }
 
-/* FILE TREE */
+/* TREE */
 
 .tree {
     padding: 17px;
@@ -497,10 +569,6 @@ tr:last-child td {
     color: #bfc6d4;
 
     font: 12px/1.8 monospace;
-}
-
-.tree .muted {
-    color: var(--dim);
 }
 
 /* FOOTER */
@@ -529,6 +597,10 @@ footer {
 
 @media (max-width: 800px) {
 
+    .nav-links {
+        display: none;
+    }
+
     .layout {
         grid-template-columns: 1fr;
         gap: 30px;
@@ -549,16 +621,16 @@ footer {
     .cards {
         grid-template-columns: 1fr;
     }
+
+    .nav-right {
+        gap: 10px;
+    }
 }
 
 @media (max-width: 600px) {
 
     .container {
         width: min(100% - 26px, 1080px);
-    }
-
-    .nav-links {
-        display: none;
     }
 
     .hero {
@@ -594,23 +666,25 @@ footer {
 <!-- NAV -->
 
 <nav>
-    <div class="container nav">
+<div class="container nav">
 
-        <a href="#" class="brand">
-            <span class="logo">P</span>
-            <span>PSZ</span>
-        </a>
+    <a href="#" class="brand">
+        <span class="logo">P</span>
+        <span>PSZ</span>
+    </a>
+
+    <div class="nav-right">
 
         <div class="nav-links">
-            <a href="#getting-started">
+            <a href="#getting-started" data-i18n="nav-start">
                 Getting Started
             </a>
 
-            <a href="#format">
+            <a href="#format" data-i18n="nav-format">
                 Format
             </a>
 
-            <a href="#api">
+            <a href="#api" data-i18n="nav-api">
                 API
             </a>
 
@@ -623,7 +697,44 @@ footer {
             </a>
         </div>
 
+        <div class="language" id="language">
+
+            <button
+                class="language-button"
+                id="languageButton"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+            >
+                <span>EN</span>
+                <span>⌄</span>
+            </button>
+
+            <div class="language-menu">
+
+                <button
+                    class="language-option active"
+                    data-lang="en"
+                    type="button"
+                >
+                    English
+                </button>
+
+                <button
+                    class="language-option"
+                    data-lang="de"
+                    type="button"
+                >
+                    Deutsch
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
+
+</div>
 </nav>
 
 
@@ -633,48 +744,60 @@ footer {
 
 <section class="hero">
 
-    <div class="container">
+<div class="container">
 
-        <div class="hero-inner">
+<div class="hero-inner">
 
-            <div class="badge">
-                PSZ1 · DOCUMENTATION
-            </div>
+    <div class="badge">
+        <span class="dot"></span>
+        <span data-i18n="badge">
+            PSZ1 · DOCUMENTATION
+        </span>
+    </div>
 
-            <h1>
-                Project Secure<br>
-                <span class="gradient">Zip.</span>
-            </h1>
+    <h1>
+        <span data-i18n="hero-line1">
+            Project Secure
+        </span>
+        <br>
+        <span class="gradient">
+            <span data-i18n="hero-line2">Zip.</span>
+        </span>
+    </h1>
 
-            <p>
-                PSZ is a project archive format designed
-                for packaging and encrypting complete project
-                directories into portable archives.
-            </p>
+    <p data-i18n="hero-description">
+        PSZ is a project archive format designed
+        for packaging and encrypting complete project
+        directories into portable archives.
+    </p>
 
-            <div class="hero-links">
+    <div class="hero-links">
 
-                <a
-                    class="button primary"
-                    href="#getting-started"
-                >
-                    Get Started
-                </a>
+        <a
+            class="button primary"
+            href="#getting-started"
+            data-i18n="get-started"
+        >
+            Get Started
+        </a>
 
-                <a
-                    class="button"
-                    href="https://github.com/SlabyLol/psz"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    View on GitHub ↗
-                </a>
-
-            </div>
-
-        </div>
+        <a
+            class="button"
+            href="https://github.com/SlabyLol/psz"
+            target="_blank"
+            rel="noopener"
+        >
+            <span data-i18n="view-github">
+                View on GitHub
+            </span>
+            ↗
+        </a>
 
     </div>
+
+</div>
+
+</div>
 
 </section>
 
@@ -692,43 +815,46 @@ footer {
 
 <aside class="sidebar">
 
-    <div class="sidebar-title">
+    <div
+        class="sidebar-title"
+        data-i18n="sidebar-title"
+    >
         Documentation
     </div>
 
-    <a href="#overview">
+    <a href="#overview" data-i18n="side-overview">
         Overview
     </a>
 
-    <a href="#getting-started">
+    <a href="#getting-started" data-i18n="side-start">
         Getting Started
     </a>
 
-    <a href="#installation">
+    <a href="#installation" data-i18n="side-install">
         Installation
     </a>
 
-    <a href="#usage">
+    <a href="#usage" data-i18n="side-usage">
         Usage
     </a>
 
-    <a href="#format">
+    <a href="#format" data-i18n="side-format">
         PSZ Format
     </a>
 
-    <a href="#files">
+    <a href="#files" data-i18n="side-files">
         Files
     </a>
 
-    <a href="#api">
+    <a href="#api" data-i18n="side-api">
         Python API
     </a>
 
-    <a href="#security">
+    <a href="#security" data-i18n="side-security">
         Security
     </a>
 
-    <a href="#github">
+    <a href="#github" data-i18n="side-github">
         GitHub
     </a>
 
@@ -742,29 +868,25 @@ footer {
 
 <!-- OVERVIEW -->
 
-<section
-    class="doc-section"
-    id="overview"
->
+<section class="doc-section" id="overview">
 
     <div class="eyebrow">
-        01 · Overview
+        01 · <span data-i18n="overview">Overview</span>
     </div>
 
-    <h2>
+    <h2 data-i18n="overview-title">
         What is PSZ?
     </h2>
 
-    <p>
-        PSZ, short for <strong>Project Secure Zip</strong>,
-        is an archive format for distributing complete
-        project directories as encrypted packages.
+    <p data-i18n="overview-p1">
+        PSZ, short for Project Secure Zip, is an archive
+        format for distributing complete project directories
+        as encrypted packages.
     </p>
 
-    <p>
-        A PSZ project consists of an encrypted
-        <code>.psz</code> archive and a matching
-        <code>.psz-data.lor</code> file used by the
+    <p data-i18n="overview-p2">
+        A PSZ project consists of an encrypted .psz archive
+        and a matching .psz-data.lor file used by the
         unpacking implementation.
     </p>
 
@@ -773,15 +895,13 @@ footer {
 
         <div class="card">
 
-            <div class="card-icon">
-                PKG
-            </div>
+            <div class="card-icon">PKG</div>
 
-            <h3>
+            <h3 data-i18n="card-pack-title">
                 Project packaging
             </h3>
 
-            <p>
+            <p data-i18n="card-pack-text">
                 Package files and directories into one
                 portable project archive.
             </p>
@@ -791,15 +911,13 @@ footer {
 
         <div class="card">
 
-            <div class="card-icon">
-                ENC
-            </div>
+            <div class="card-icon">ENC</div>
 
-            <h3>
+            <h3 data-i18n="card-encryption-title">
                 Authenticated encryption
             </h3>
 
-            <p>
+            <p data-i18n="card-encryption-text">
                 PSZ uses AES-256-GCM to protect the
                 archived project data.
             </p>
@@ -809,15 +927,13 @@ footer {
 
         <div class="card">
 
-            <div class="card-icon">
-                API
-            </div>
+            <div class="card-icon">API</div>
 
-            <h3>
+            <h3 data-i18n="card-api-title">
                 Python API
             </h3>
 
-            <p>
+            <p data-i18n="card-api-text">
                 Create and open PSZ archives directly
                 from Python applications.
             </p>
@@ -827,15 +943,13 @@ footer {
 
         <div class="card">
 
-            <div class="card-icon">
-                LOR
-            </div>
+            <div class="card-icon">LOR</div>
 
-            <h3>
+            <h3 data-i18n="card-lor-title">
                 Portable unpacking
             </h3>
 
-            <p>
+            <p data-i18n="card-lor-text">
                 A matching data file contains the
                 information required by the unpacker.
             </p>
@@ -849,20 +963,19 @@ footer {
 
 <!-- GETTING STARTED -->
 
-<section
-    class="doc-section"
-    id="getting-started"
->
+<section class="doc-section" id="getting-started">
 
     <div class="eyebrow">
-        02 · Getting Started
+        02 · <span data-i18n="getting-started">
+            Getting Started
+        </span>
     </div>
 
-    <h2>
+    <h2 data-i18n="getting-title">
         Get started with PSZ.
     </h2>
 
-    <p>
+    <p data-i18n="getting-text">
         The recommended way to use PSZ is through its
         Python package.
     </p>
@@ -872,22 +985,19 @@ footer {
 
 <!-- INSTALLATION -->
 
-<section
-    class="doc-section"
-    id="installation"
->
+<section class="doc-section" id="installation">
 
-    <h2>
+    <h2 data-i18n="installation-title">
         Installation
     </h2>
 
-    <p>
+    <p data-i18n="installation-text">
         Install the latest version directly from GitHub:
     </p>
 
     <pre>pip install git+https://github.com/SlabyLol/psz.git</pre>
 
-    <p>
+    <p data-i18n="editable-text">
         If you have cloned the repository, install it
         in editable mode:
     </p>
@@ -901,20 +1011,17 @@ pip install -e .</pre>
 
 <!-- USAGE -->
 
-<section
-    class="doc-section"
-    id="usage"
->
+<section class="doc-section" id="usage">
 
-    <h2>
+    <h2 data-i18n="usage-title">
         Usage
     </h2>
 
-    <h3>
+    <h3 data-i18n="create-title">
         Creating an archive
     </h3>
 
-    <p>
+    <p data-i18n="create-text">
         The Python API can create a PSZ archive from
         a project directory:
     </p>
@@ -928,11 +1035,11 @@ create_archive(
 )</pre>
 
 
-    <h3>
+    <h3 data-i18n="open-title">
         Opening an archive
     </h3>
 
-    <p>
+    <p data-i18n="open-text">
         Open an existing PSZ archive and extract its
         contents into an output directory:
     </p>
@@ -947,13 +1054,13 @@ open_archive(
 )</pre>
 
 
-    <h3>
+    <h3 data-i18n="list-title">
         Listing archive members
     </h3>
 
-    <p>
+    <p data-i18n="list-text">
         Archive members can be inspected through
-        <code>list_archive_members</code>:
+        list_archive_members:
     </p>
 
     <pre>from pathlib import Path
@@ -972,20 +1079,17 @@ for member in members:
 
 <!-- FORMAT -->
 
-<section
-    class="doc-section"
-    id="format"
->
+<section class="doc-section" id="format">
 
     <div class="eyebrow">
-        03 · Format
+        03 · <span data-i18n="format">Format</span>
     </div>
 
-    <h2>
+    <h2 data-i18n="format-title">
         PSZ1 format
     </h2>
 
-    <p>
+    <p data-i18n="format-text">
         PSZ version 1 uses a compact binary container.
         The archive starts with the PSZ magic value and
         stores encrypted TAR data.
@@ -998,15 +1102,15 @@ for member in members:
 
             <thead>
                 <tr>
-                    <th>
+                    <th data-i18n="offset">
                         Offset
                     </th>
 
-                    <th>
+                    <th data-i18n="size">
                         Size
                     </th>
 
-                    <th>
+                    <th data-i18n="field">
                         Field
                     </th>
                 </tr>
@@ -1015,57 +1119,31 @@ for member in members:
             <tbody>
 
                 <tr>
-                    <td>
-                        0
-                    </td>
-
-                    <td>
-                        4 bytes
-                    </td>
-
-                    <td>
-                        <code>PSZ1</code> magic
-                    </td>
+                    <td>0</td>
+                    <td>4 bytes</td>
+                    <td><code>PSZ1</code> <span data-i18n="magic">magic</span></td>
                 </tr>
 
                 <tr>
-                    <td>
-                        4
-                    </td>
-
-                    <td>
-                        1 byte
-                    </td>
-
-                    <td>
+                    <td>4</td>
+                    <td>1 byte</td>
+                    <td data-i18n="version">
                         Format version
                     </td>
                 </tr>
 
                 <tr>
-                    <td>
-                        5
-                    </td>
-
-                    <td>
-                        12 bytes
-                    </td>
-
-                    <td>
+                    <td>5</td>
+                    <td>12 bytes</td>
+                    <td data-i18n="nonce">
                         AES-GCM nonce
                     </td>
                 </tr>
 
                 <tr>
-                    <td>
-                        17
-                    </td>
-
-                    <td>
-                        Variable
-                    </td>
-
-                    <td>
+                    <td>17</td>
+                    <td>Variable</td>
+                    <td data-i18n="payload">
                         Encrypted TAR + authentication tag
                     </td>
                 </tr>
@@ -1077,7 +1155,7 @@ for member in members:
     </div>
 
 
-    <h3>
+    <h3 data-i18n="binary-title">
         Binary structure
     </h3>
 
@@ -1089,7 +1167,7 @@ for member in members:
 
     <div class="note">
 
-        <p>
+        <p data-i18n="format-note">
             The encrypted payload is authenticated using
             AES-GCM. Modifying the ciphertext or authentication
             data causes decryption to fail.
@@ -1102,46 +1180,37 @@ for member in members:
 
 <!-- FILES -->
 
-<section
-    class="doc-section"
-    id="files"
->
+<section class="doc-section" id="files">
 
     <div class="eyebrow">
-        04 · Files
+        04 · <span data-i18n="files">Files</span>
     </div>
 
-    <h2>
+    <h2 data-i18n="files-title">
         Project files
     </h2>
 
-    <p>
+    <p data-i18n="files-text">
         A typical PSZ project produces two related files.
     </p>
 
 
     <div class="tree">demo-project/
-<br>
 ├── demo.psz
-<br>
 └── demo.psz-data.lor</div>
 
 
-    <h3>
-        .psz
-    </h3>
+    <h3>.psz</h3>
 
-    <p>
+    <p data-i18n="psz-text">
         The main PSZ archive. It contains the encrypted
         project data.
     </p>
 
 
-    <h3>
-        .psz-data.lor
-    </h3>
+    <h3>.psz-data.lor</h3>
 
-    <p>
+    <p data-i18n="lor-text">
         The accompanying unpacker/data file associated
         with the PSZ archive.
     </p>
@@ -1149,7 +1218,7 @@ for member in members:
 
     <div class="note">
 
-        <p>
+        <p data-i18n="files-note">
             Keep the matching data file together with the
             archive when the archive needs to be opened
             using the generated unpacking information.
@@ -1162,25 +1231,20 @@ for member in members:
 
 <!-- API -->
 
-<section
-    class="doc-section"
-    id="api"
->
+<section class="doc-section" id="api">
 
     <div class="eyebrow">
-        05 · Python API
+        05 · <span data-i18n="api">Python API</span>
     </div>
 
-    <h2>
+    <h2 data-i18n="api-title">
         Python API reference
     </h2>
 
 
-    <h3>
-        create_archive()
-    </h3>
+    <h3>create_archive()</h3>
 
-    <p>
+    <p data-i18n="create-api-text">
         Creates a PSZ archive from a project directory.
     </p>
 
@@ -1190,11 +1254,9 @@ for member in members:
 )</pre>
 
 
-    <h3>
-        open_archive()
-    </h3>
+    <h3>open_archive()</h3>
 
-    <p>
+    <p data-i18n="open-api-text">
         Opens a PSZ archive using its matching data file
         and writes the resulting project to the output path.
     </p>
@@ -1206,11 +1268,9 @@ for member in members:
 )</pre>
 
 
-    <h3>
-        list_archive_members()
-    </h3>
+    <h3>list_archive_members()</h3>
 
-    <p>
+    <p data-i18n="list-api-text">
         Returns the members contained in the archive.
     </p>
 
@@ -1220,7 +1280,7 @@ for member in members:
 )</pre>
 
 
-    <h3>
+    <h3 data-i18n="complete-title">
         Complete example
     </h3>
 
@@ -1266,20 +1326,17 @@ open_archive(
 
 <!-- SECURITY -->
 
-<section
-    class="doc-section"
-    id="security"
->
+<section class="doc-section" id="security">
 
     <div class="eyebrow">
-        06 · Security
+        06 · <span data-i18n="security">Security</span>
     </div>
 
-    <h2>
+    <h2 data-i18n="security-title">
         Security model
     </h2>
 
-    <p>
+    <p data-i18n="security-text">
         PSZ uses authenticated encryption rather than
         plain compression or obfuscation.
     </p>
@@ -1289,15 +1346,11 @@ open_archive(
 
         <div class="card">
 
-            <div class="card-icon">
-                256
-            </div>
+            <div class="card-icon">256</div>
 
-            <h3>
-                AES-256
-            </h3>
+            <h3>AES-256</h3>
 
-            <p>
+            <p data-i18n="aes-text">
                 The archive payload is encrypted using
                 AES with a 256-bit key.
             </p>
@@ -1307,15 +1360,11 @@ open_archive(
 
         <div class="card">
 
-            <div class="card-icon">
-                GCM
-            </div>
+            <div class="card-icon">GCM</div>
 
-            <h3>
-                GCM authentication
-            </h3>
+            <h3>GCM authentication</h3>
 
-            <p>
+            <p data-i18n="gcm-text">
                 AES-GCM provides authenticated encryption,
                 allowing modified archives to be detected.
             </p>
@@ -1325,15 +1374,11 @@ open_archive(
 
         <div class="card">
 
-            <div class="card-icon">
-                12B
-            </div>
+            <div class="card-icon">12B</div>
 
-            <h3>
-                Nonce
-            </h3>
+            <h3>Nonce</h3>
 
-            <p>
+            <p data-i18n="nonce-text">
                 Each archive uses a 12-byte AES-GCM nonce
                 as part of its encrypted payload.
             </p>
@@ -1343,15 +1388,11 @@ open_archive(
 
         <div class="card">
 
-            <div class="card-icon">
-                TAR
-            </div>
+            <div class="card-icon">TAR</div>
 
-            <h3>
-                TAR payload
-            </h3>
+            <h3>TAR payload</h3>
 
-            <p>
+            <p data-i18n="tar-text">
                 Project files are packaged into TAR data
                 before encryption.
             </p>
@@ -1363,7 +1404,7 @@ open_archive(
 
     <div class="note">
 
-        <p>
+        <p data-i18n="security-note">
             Encryption does not protect a key that is
             distributed alongside the archive. Treat the
             matching key/unpacker data as sensitive when
@@ -1377,20 +1418,17 @@ open_archive(
 
 <!-- GITHUB -->
 
-<section
-    class="doc-section"
-    id="github"
->
+<section class="doc-section" id="github">
 
     <div class="eyebrow">
-        07 · Project
+        07 · <span data-i18n="project">Project</span>
     </div>
 
-    <h2>
+    <h2 data-i18n="github-title">
         Source code
     </h2>
 
-    <p>
+    <p data-i18n="github-text">
         PSZ is open source. Find the implementation,
         issues and project information on GitHub.
     </p>
@@ -1403,7 +1441,10 @@ open_archive(
             target="_blank"
             rel="noopener"
         >
-            Open GitHub Repository ↗
+            <span data-i18n="open-repo">
+                Open GitHub Repository
+            </span>
+            ↗
         </a>
 
     </div>
@@ -1412,9 +1453,7 @@ open_archive(
 
 
 </div>
-
 </div>
-
 </div>
 
 </section>
@@ -1432,13 +1471,428 @@ open_archive(
         PSZ · Project Secure Zip
     </span>
 
-    <span>
+    <span data-i18n="footer">
         Documentation for PSZ1
     </span>
 
 </div>
 
 </footer>
+
+
+<script>
+const translations = {
+
+    en: {
+
+        "nav-start": "Getting Started",
+        "nav-format": "Format",
+        "nav-api": "API",
+
+        "badge": "PSZ1 · DOCUMENTATION",
+
+        "hero-line1": "Project Secure",
+        "hero-line2": "Zip.",
+
+        "hero-description":
+            "PSZ is a project archive format designed for packaging and encrypting complete project directories into portable archives.",
+
+        "get-started": "Get Started",
+        "view-github": "View on GitHub",
+
+        "sidebar-title": "Documentation",
+        "side-overview": "Overview",
+        "side-start": "Getting Started",
+        "side-install": "Installation",
+        "side-usage": "Usage",
+        "side-format": "PSZ Format",
+        "side-files": "Files",
+        "side-api": "Python API",
+        "side-security": "Security",
+        "side-github": "GitHub",
+
+        "overview": "Overview",
+        "overview-title": "What is PSZ?",
+
+        "overview-p1":
+            "PSZ, short for Project Secure Zip, is an archive format for distributing complete project directories as encrypted packages.",
+
+        "overview-p2":
+            "A PSZ project consists of an encrypted .psz archive and a matching .psz-data.lor file used by the unpacking implementation.",
+
+        "card-pack-title": "Project packaging",
+        "card-pack-text":
+            "Package files and directories into one portable project archive.",
+
+        "card-encryption-title": "Authenticated encryption",
+        "card-encryption-text":
+            "PSZ uses AES-256-GCM to protect the archived project data.",
+
+        "card-api-title": "Python API",
+        "card-api-text":
+            "Create and open PSZ archives directly from Python applications.",
+
+        "card-lor-title": "Portable unpacking",
+        "card-lor-text":
+            "A matching data file contains the information required by the unpacker.",
+
+        "getting-started": "Getting Started",
+        "getting-title": "Get started with PSZ.",
+        "getting-text":
+            "The recommended way to use PSZ is through its Python package.",
+
+        "installation-title": "Installation",
+        "installation-text":
+            "Install the latest version directly from GitHub.",
+
+        "editable-text":
+            "If you have cloned the repository, install it in editable mode.",
+
+        "usage-title": "Usage",
+
+        "create-title": "Creating an archive",
+        "create-text":
+            "The Python API can create a PSZ archive from a project directory.",
+
+        "open-title": "Opening an archive",
+        "open-text":
+            "Open an existing PSZ archive and extract its contents into an output directory.",
+
+        "list-title": "Listing archive members",
+        "list-text":
+            "Archive members can be inspected through list_archive_members.",
+
+        "format": "Format",
+        "format-title": "PSZ1 format",
+        "format-text":
+            "PSZ version 1 uses a compact binary container. The archive starts with the PSZ magic value and stores encrypted TAR data.",
+
+        "offset": "Offset",
+        "size": "Size",
+        "field": "Field",
+
+        "magic": "magic",
+        "version": "Format version",
+        "nonce": "AES-GCM nonce",
+        "payload": "Encrypted TAR + authentication tag",
+
+        "binary-title": "Binary structure",
+
+        "format-note":
+            "The encrypted payload is authenticated using AES-GCM. Modifying the ciphertext or authentication data causes decryption to fail.",
+
+        "files": "Files",
+        "files-title": "Project files",
+        "files-text":
+            "A typical PSZ project produces two related files.",
+
+        "psz-text":
+            "The main PSZ archive. It contains the encrypted project data.",
+
+        "lor-text":
+            "The accompanying unpacker/data file associated with the PSZ archive.",
+
+        "files-note":
+            "Keep the matching data file together with the archive when the archive needs to be opened using the generated unpacking information.",
+
+        "api": "Python API",
+        "api-title": "Python API reference",
+
+        "create-api-text":
+            "Creates a PSZ archive from a project directory.",
+
+        "open-api-text":
+            "Opens a PSZ archive using its matching data file and writes the resulting project to the output path.",
+
+        "list-api-text":
+            "Returns the members contained in the archive.",
+
+        "complete-title": "Complete example",
+
+        "security": "Security",
+        "security-title": "Security model",
+        "security-text":
+            "PSZ uses authenticated encryption rather than plain compression or obfuscation.",
+
+        "aes-text":
+            "The archive payload is encrypted using AES with a 256-bit key.",
+
+        "gcm-text":
+            "AES-GCM provides authenticated encryption, allowing modified archives to be detected.",
+
+        "nonce-text":
+            "Each archive uses a 12-byte AES-GCM nonce as part of its encrypted payload.",
+
+        "tar-text":
+            "Project files are packaged into TAR data before encryption.",
+
+        "security-note":
+            "Encryption does not protect a key that is distributed alongside the archive. Treat the matching key/unpacker data as sensitive when confidentiality is required.",
+
+        "project": "Project",
+        "github-title": "Source code",
+
+        "github-text":
+            "PSZ is open source. Find the implementation, issues and project information on GitHub.",
+
+        "open-repo": "Open GitHub Repository",
+
+        "footer": "Documentation for PSZ1"
+    },
+
+
+    de: {
+
+        "nav-start": "Erste Schritte",
+        "nav-format": "Format",
+        "nav-api": "API",
+
+        "badge": "PSZ1 · DOKUMENTATION",
+
+        "hero-line1": "Project Secure",
+        "hero-line2": "Zip.",
+
+        "hero-description":
+            "PSZ ist ein Archivformat zum Verpacken und Verschlüsseln vollständiger Projektverzeichnisse in portable Archive.",
+
+        "get-started": "Erste Schritte",
+        "view-github": "Auf GitHub ansehen",
+
+        "sidebar-title": "Dokumentation",
+        "side-overview": "Übersicht",
+        "side-start": "Erste Schritte",
+        "side-install": "Installation",
+        "side-usage": "Verwendung",
+        "side-format": "PSZ-Format",
+        "side-files": "Dateien",
+        "side-api": "Python-API",
+        "side-security": "Sicherheit",
+        "side-github": "GitHub",
+
+        "overview": "Übersicht",
+        "overview-title": "Was ist PSZ?",
+
+        "overview-p1":
+            "PSZ steht für Project Secure Zip und ist ein Archivformat zur Verteilung vollständiger Projektverzeichnisse als verschlüsselte Pakete.",
+
+        "overview-p2":
+            "Ein PSZ-Projekt besteht aus einem verschlüsselten .psz-Archiv und einer zugehörigen .psz-data.lor-Datei, die von der Entpack-Implementierung verwendet wird.",
+
+        "card-pack-title": "Projektverpackung",
+        "card-pack-text":
+            "Dateien und Verzeichnisse in einem portablen Projektarchiv zusammenfassen.",
+
+        "card-encryption-title": "Authentifizierte Verschlüsselung",
+        "card-encryption-text":
+            "PSZ verwendet AES-256-GCM zum Schutz der archivierten Projektdaten.",
+
+        "card-api-title": "Python-API",
+        "card-api-text":
+            "PSZ-Archive direkt aus Python-Anwendungen erstellen und öffnen.",
+
+        "card-lor-title": "Portables Entpacken",
+        "card-lor-text":
+            "Die zugehörige Datendatei enthält die für das Entpacken benötigten Informationen.",
+
+        "getting-started": "Erste Schritte",
+        "getting-title": "Mit PSZ starten.",
+        "getting-text":
+            "Die empfohlene Verwendung von PSZ erfolgt über das Python-Paket.",
+
+        "installation-title": "Installation",
+        "installation-text":
+            "Installiere die neueste Version direkt von GitHub.",
+
+        "editable-text":
+            "Wenn du das Repository geklont hast, kannst du es im Editable-Modus installieren.",
+
+        "usage-title": "Verwendung",
+
+        "create-title": "Archiv erstellen",
+        "create-text":
+            "Mit der Python-API kann ein PSZ-Archiv aus einem Projektverzeichnis erstellt werden.",
+
+        "open-title": "Archiv öffnen",
+        "open-text":
+            "Ein vorhandenes PSZ-Archiv öffnen und dessen Inhalt in ein Ausgabe-Verzeichnis schreiben.",
+
+        "list-title": "Archivmitglieder auflisten",
+        "list-text":
+            "Die enthaltenen Dateien und Verzeichnisse können mit list_archive_members angezeigt werden.",
+
+        "format": "Format",
+        "format-title": "PSZ1-Format",
+        "format-text":
+            "PSZ Version 1 verwendet einen kompakten binären Container. Das Archiv beginnt mit dem PSZ-Magic-Wert und enthält verschlüsselte TAR-Daten.",
+
+        "offset": "Offset",
+        "size": "Größe",
+        "field": "Feld",
+
+        "magic": "Magic-Wert",
+        "version": "Formatversion",
+        "nonce": "AES-GCM-Nonce",
+        "payload": "Verschlüsseltes TAR + Authentifizierungs-Tag",
+
+        "binary-title": "Binäre Struktur",
+
+        "format-note":
+            "Die verschlüsselten Daten werden mit AES-GCM authentifiziert. Werden Ciphertext oder Authentifizierungsdaten verändert, schlägt die Entschlüsselung fehl.",
+
+        "files": "Dateien",
+        "files-title": "Projektdateien",
+        "files-text":
+            "Ein typisches PSZ-Projekt erzeugt zwei zusammengehörige Dateien.",
+
+        "psz-text":
+            "Das eigentliche PSZ-Archiv. Es enthält die verschlüsselten Projektdaten.",
+
+        "lor-text":
+            "Die zum PSZ-Archiv gehörende Unpacker-/Datendatei.",
+
+        "files-note":
+            "Bewahre die zugehörige Datendatei zusammen mit dem Archiv auf, wenn das Archiv mit den erzeugten Entpack-Informationen geöffnet werden soll.",
+
+        "api": "Python-API",
+        "api-title": "Python-API-Referenz",
+
+        "create-api-text":
+            "Erstellt ein PSZ-Archiv aus einem Projektverzeichnis.",
+
+        "open-api-text":
+            "Öffnet ein PSZ-Archiv mit der zugehörigen Datendatei und schreibt das resultierende Projekt in das Ausgabe-Verzeichnis.",
+
+        "list-api-text":
+            "Gibt die im Archiv enthaltenen Mitglieder zurück.",
+
+        "complete-title": "Vollständiges Beispiel",
+
+        "security": "Sicherheit",
+        "security-title": "Sicherheitsmodell",
+        "security-text":
+            "PSZ verwendet authentifizierte Verschlüsselung anstelle von einfacher Kompression oder Verschleierung.",
+
+        "aes-text":
+            "Die Archivdaten werden mit AES und einem 256-Bit-Schlüssel verschlüsselt.",
+
+        "gcm-text":
+            "AES-GCM bietet authentifizierte Verschlüsselung und ermöglicht das Erkennen veränderter Archive.",
+
+        "nonce-text":
+            "Jedes Archiv verwendet eine 12 Byte große AES-GCM-Nonce als Teil der verschlüsselten Daten.",
+
+        "tar-text":
+            "Die Projektdateien werden vor der Verschlüsselung als TAR-Daten zusammengefasst.",
+
+        "security-note":
+            "Eine Verschlüsselung schützt keinen Schlüssel, der zusammen mit dem Archiv verteilt wird. Behandle die zugehörigen Schlüssel-/Unpacker-Daten als vertraulich, wenn Geheimhaltung erforderlich ist.",
+
+        "project": "Projekt",
+        "github-title": "Quellcode",
+
+        "github-text":
+            "PSZ ist Open Source. Den Quellcode, Issues und weitere Projektinformationen findest du auf GitHub.",
+
+        "open-repo": "GitHub-Repository öffnen",
+
+        "footer": "Dokumentation für PSZ1"
+    }
+};
+
+
+const language = document.getElementById("language");
+const languageButton = document.getElementById("languageButton");
+const options = document.querySelectorAll(".language-option");
+
+
+function setLanguage(lang) {
+
+    const dictionary = translations[lang];
+
+    if (!dictionary) return;
+
+    document.documentElement.lang = lang;
+
+    document
+        .querySelectorAll("[data-i18n]")
+        .forEach(element => {
+
+            const key = element.dataset.i18n;
+
+            if (dictionary[key]) {
+                element.textContent = dictionary[key];
+            }
+
+        });
+
+
+    languageButton.querySelector("span").textContent =
+        lang.toUpperCase();
+
+
+    options.forEach(option => {
+        option.classList.toggle(
+            "active",
+            option.dataset.lang === lang
+        );
+    });
+
+
+    localStorage.setItem("psz-language", lang);
+
+    language.classList.remove("open");
+
+    languageButton.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+}
+
+
+languageButton.addEventListener("click", event => {
+
+    event.stopPropagation();
+
+    const isOpen =
+        language.classList.toggle("open");
+
+    languageButton.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+    );
+});
+
+
+options.forEach(option => {
+
+    option.addEventListener("click", () => {
+
+        setLanguage(option.dataset.lang);
+
+    });
+
+});
+
+
+document.addEventListener("click", () => {
+
+    language.classList.remove("open");
+
+    languageButton.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+});
+
+
+const savedLanguage =
+    localStorage.getItem("psz-language");
+
+setLanguage(
+    savedLanguage === "de" ? "de" : "en"
+);
+</script>
 
 </body>
 </html>
