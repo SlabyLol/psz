@@ -1,4 +1,4 @@
-name: Example – Build project and decrypt PSZ archive
+name: Extract PSZ archive
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_dec:
+  pack:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,22 +20,19 @@ jobs:
 
       - name: Install PSZ
         run: |
-          pip install -e .
+          pip install git+https://github.com/SlabyLol/psz.git
           psz --version
 
-      # ---------------------------------------------------------------
-      # Example: pretend we built something and put it into dist/
-      # Replace this section with your real build steps.
-      # ---------------------------------------------------------------
-
-      - name: Create decrypted PSZ archive
+      - name: Create encrypted PSZ archive
         run: |
-          psz open examples release.psz release.psz-data.lor -o extracted/
+          psz open sample/release.psz extract/release.psz-data.lor -o extracted/
+          echo "Extracted files:"
+          ls extracted
 
       - name: Upload PSZ artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: psz-archive
+          name: psz-demo-archive
           path: |
             extracted
-          retention-days: 14
+          retention-days: 30
