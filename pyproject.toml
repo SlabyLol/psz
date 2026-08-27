@@ -4,30 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "psz"
-version = "0.67.0"
-description = "Encrypted project archive format with paired unpacker (.psz + .psz-data.lor)"
+version = "1.0.9beta"
+description = "Encrypted project archive format (.psz + .psz-data.lor) with multi-language unpackers"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
-authors = [
-    {name = "DarkFox / SlabyLol"}
-]
+authors = [{name = "DarkFox / SlabyLol"}]
 keywords = ["archive", "encryption", "aes", "psz", "secure-archive"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Environment :: Console",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Security :: Cryptography",
-    "Topic :: System :: Archiving",
-    "Topic :: Utilities",
-]
 dependencies = [
     "cryptography>=42.0.0",
 ]
@@ -38,7 +21,6 @@ psz = "psz.cli:main"
 [project.urls]
 Homepage = "https://github.com/SlabyLol/psz"
 Repository = "https://github.com/SlabyLol/psz"
-Issues = "https://github.com/SlabyLol/psz/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]

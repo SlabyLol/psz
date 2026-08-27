@@ -1,114 +1,64 @@
-[![PSZ BANNER](https://github.com/SlabyLol/psz/blob/main/banner.png)](https://slabylol.github.io/psz)
 # PSZ – Encrypted Project Archives
 
-**PSZ** is a simple encrypted archive format designed for projects.
+# !BETA functions!
 
-Every archive consists of **two files**:
+AES-256-GCM archives with a paired **`.psz-data.lor`** key file.
 
-| File | Description |
-|------|-------------|
-| `something.psz` | The encrypted archive (AES-256-GCM) |
-| `something.psz-data.lor` | The matching unpacker that contains the key + code to open it |
+Always need **both**:
+- `name.psz` – encrypted data
+- `name.psz-data.lor` – unpacker / key (same filename for every language)
 
-You always need **both** files to extract the content.
-
----
-
-## Quick Start
-
-### Install
+## Python package + CLI
 
 ```bash
-pip install git+https://github.com/SlabyLol/psz.git
-# or after cloning:
 pip install -e .
+# requires: cryptography
 ```
 
-### Create an archive
+### CLI
 
 ```bash
-psz make ./my-project -o my-project.psz
+psz make ./project -o release.psz
+psz make ./project -o release.psz --lang php
+psz make file.txt -o one.psz
+
+psz list release.psz release.psz-data.lor
+psz open release.psz release.psz-data.lor -o out/
+psz open release.psz release.psz-data.lor -o out/ -m path/inside.txt
 ```
 
-This creates:
+### Package API
 
-- `my-project.psz`
-- `my-project.psz-data.lor`
+```python
+from pathlib import Path
+from psz import create_archive, open_archive, list_archive_members
 
-### Open / extract
+create_archive(Path("project"), Path("release.psz"))
+list_archive_members(Path("release.psz"), Path("release.psz-data.lor"))
+open_archive(Path("release.psz"), Path("release.psz-data.lor"), Path("out"))
+```
+
+## Languages for `.psz-data.lor` content
 
 ```bash
-psz open my-project.psz my-project.psz-data.lor -o extracted/
+psz make ./project -o r.psz --lang python   # default
+psz make ./project -o r.psz --lang php
+psz make ./project -o r.psz --lang js
+psz make ./project -o r.psz --lang html
 ```
 
-Or run the `.lor` file directly (it is a self-contained Python script):
+Name is always **`r.psz-data.lor`**.
+
+## Examples
+
+See [examples/](examples/).
 
 ```bash
-python my-project.psz-data.lor my-project.psz -o extracted/
+python3 examples/extractors/psz-extractor1.py
+php examples/extractors/psz-extractor1.php
+node examples/extractors/psz-extractor1.js
 ```
-
----
-
-## How it works
-
-1. All files from the source directory are packed into a **tar** archive.
-2. The tar is encrypted with **AES-256-GCM** using a fresh random key.
-3. The encrypted data is written to the `.psz` file.
-4. A small Python script (`.psz-data.lor`) is generated that embeds the key and can decrypt + extract that specific archive.
-
-The `.lor` file is intentionally paired 1:1 with its `.psz`.  
-Sharing only the `.psz` is useless without the matching `.lor`.
-
----
-
-## Docker
-
-```bash
-docker build -t psz .
-docker run --rm -v $(pwd):/data psz make /data/myfolder -o /data/out.psz
-```
-
----
-
-## GitHub Actions
-
-This repository includes an example workflow (`.github/workflows/example-build.yml`) that:
-
-1. Builds / prepares a `dist/` folder
-2. Runs `psz make dist -o release.psz`
-3. Uploads both `release.psz` and `release.psz-data.lor` as artifacts
-
-You can copy the workflow into your own projects and adapt the build steps.
-
----
-
-## Command reference
-
-```text
-psz make <source_dir> -o <name.psz> [--lor custom.lor]
-psz open <name.psz> <name.psz-data.lor> [-o output_dir]
-psz --version
-psz --help
-```
-
----
-
-## Security notes
-
-- Uses AES-256-GCM (authenticated encryption).
-- A new random key is generated for every archive.
-- The key lives **only** inside the matching `.lor` file.
-- Do **not** publish the `.lor` file if the content is sensitive and you only want to distribute the encrypted `.psz`.
-- Path traversal protection is applied when extracting.
-
----
 
 ## License
 
-MIT – see [LICENSE](LICENSE)
-
----
-
-## Repository
-
-https://github.com/SlabyLol/psz
+MIT
