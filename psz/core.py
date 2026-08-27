@@ -1,7 +1,7 @@
 """
 Core logic for PSZ archives.
 .psz = AES-256-GCM encrypted tar
-Unpackers always end with .lor (Python/PHP/JS/HTML)
+Unpacker is always named *.psz-data.lor (language via --lang)
 """
 from __future__ import annotations
 import io, os, tarfile
@@ -66,16 +66,10 @@ def _unpack_tar(data: bytes, dest: Path, members: Optional[list[str]] = None) ->
     return extracted
 
 def _lor_path_for(output_psz: Path, lang: str) -> Path:
-    """All unpackers use the .lor extension (language in the name)."""
-    suffix = {
-        "python": "-data.lor",
-        "php": "-data.php.lor",
-        "js": "-data.js.lor",
-        "html": "-data.html.lor",
-    }
-    if lang not in suffix:
+    """Always the same name for compatibility: <archive>.psz-data.lor"""
+    if lang not in SUPPORTED_LANGUAGES:
         raise ValueError(f"Unsupported language: {lang}")
-    return Path(str(output_psz) + suffix[lang])
+    return Path(str(output_psz) + "-data.lor")
 
 def _extract_key_from_unpacker(path: Path) -> bytes:
     text = path.read_text(encoding="utf-8")
@@ -132,12 +126,17 @@ def create_archive(
             raise ValueError(f"Source must be a file or directory: {s}")
     output_psz = output_psz.resolve()
     if languages is None:
-        languages = list(SUPPORTED_LANGUAGES)
+        languages = ["python"]
     else:
         languages = [x.lower().strip() for x in languages]
         for lang in languages:
             if lang not in SUPPORTED_LANGUAGES:
                 raise ValueError(f"Unsupported language '{lang}'. Supported: {', '.join(SUPPORTED_LANGUAGES)}")
+    if len(languages) > 1:
+        raise ValueError(
+            "Only one unpacker language per archive when using the standard "
+            "name *.psz-data.lor. Use e.g. --lang php  or  --lang python"
+        )
     plain = _pack_paths(sources)
     key = AESGCM.generate_key(bit_length=256)
     nonce = os.urandom(NONCE_SIZE)
@@ -145,16 +144,16 @@ def create_archive(
     with open(output_psz, "wb") as f:
         f.write(MAGIC + bytes([VERSION]) + nonce + ciphertext)
     key_hex, archive_name = key.hex(), output_psz.name
+    lang = languages[0]
     gens = {"python": _generate_python_lor, "php": _generate_php_lor, "js": _generate_js_lor, "html": _generate_html_lor}
-    unpackers = []
-    for lang in languages:
-        path = lor_path.resolve() if (lor_path is not None and len(languages) == 1) else _lor_path_for(output_psz, lang)
-        path.write_text(gens[lang](key_hex, archive_name), encoding="utf-8")
-        if lang in ("python", "js"):
-            try: os.chmod(path, 0o755)
-            except OSError: pass
-        unpackers.append(path)
-    return output_psz, unpackers
+    path = lor_path.resolve() if lor_path is not None else _lor_path_for(output_psz, lang)
+    path.write_text(gens[lang](key_hex, archive_name), encoding="utf-8")
+    if lang in ("python", "js"):
+        try:
+            os.chmod(path, 0o755)
+        except OSError:
+            pass
+    return output_psz, [path]
 
 def open_archive(
     psz_path: Path,
