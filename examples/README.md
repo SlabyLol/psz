@@ -1,45 +1,58 @@
-# PSZ Examples
+# PSZ Examples – Load / execute a `.psz`
 
-You **always** need both files to unpack:
+A `.psz` is **encrypted**. To open it you always need:
 
-- `something.psz` – encrypted data
-- `something.psz-data.lor` (or `.php` / `.js` / `.html`) – unpacker **with the key**
+1. the **`.psz`** file (data)
+2. a matching **`.lor`** unpacker (contains the key)
 
-## Demo archive (folder)
+All unpackers end with **`.lor`**:
 
-| File | Role |
-|------|------|
-| `demo.psz` | Encrypted archive |
-| `demo.psz-data.lor` | Python unpacker (**required pair**) |
-| `demo.psz-data.php` | PHP |
-| `demo.psz-data.js` | Node.js |
-| `demo.psz-data.html` | Browser |
+| File | Loads `.psz` with |
+|------|-------------------|
+| `demo.psz-data.lor` | **Python** |
+| `demo.psz-data.php.lor` | **PHP** |
+| `demo.psz-data.js.lor` | **Node.js** |
+| `demo.psz-data.html.lor` | **Browser** |
+
+---
+
+## 1. Python – load `.psz`
 
 ```bash
-# list contents (needs .psz + unpacker)
+cd examples
+python3 demo.psz-data.lor demo.psz -o out-python/
+```
+
+```bash
+psz open demo.psz demo.psz-data.lor -o out-python/
 psz list demo.psz demo.psz-data.lor
-
-# extract everything
-python demo.psz-data.lor demo.psz -o out/
-psz open demo.psz demo.psz-data.lor -o out/
-
-# extract only one file from inside
-psz open demo.psz demo.psz-data.lor -o out/ -m hello.txt
-
-php demo.psz-data.php demo.psz -o out/
-node demo.psz-data.js demo.psz -o out/
-# HTML: open demo.psz-data.html → select demo.psz
 ```
 
-## Single file archive
+## 2. PHP – load `.psz`
 
 ```bash
-psz make single-file.txt -o single.psz --lang python
-psz open single.psz single.psz-data.lor -o out/
+php demo.psz-data.php.lor demo.psz -o out-php/
 ```
 
-## Pack multiple paths
+## 3. JavaScript (Node) – load `.psz`
 
 ```bash
-psz make file1.txt folder/ other.txt -o multi.psz
+node demo.psz-data.js.lor demo.psz -o out-js/
+```
+
+## 4. HTML – load `.psz` in the browser
+
+1. Open `demo.psz-data.html.lor` in the browser
+2. Select **`demo.psz`**
+3. Download the decrypted `.tar`
+
+---
+
+## Quick scripts (load demo.psz)
+
+```bash
+bash scripts/run-python.sh
+bash scripts/run-php.sh
+bash scripts/run-js.sh
+bash scripts/run-all.sh
 ```

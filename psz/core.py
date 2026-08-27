@@ -1,7 +1,7 @@
 """
 Core logic for PSZ archives.
 .psz = AES-256-GCM encrypted tar
-Unpackers: .lor (Python), .php, .js, .html (key embedded)
+Unpackers always end with .lor (Python/PHP/JS/HTML)
 """
 from __future__ import annotations
 import io, os, tarfile
@@ -66,7 +66,13 @@ def _unpack_tar(data: bytes, dest: Path, members: Optional[list[str]] = None) ->
     return extracted
 
 def _lor_path_for(output_psz: Path, lang: str) -> Path:
-    suffix = {"python": "-data.lor", "php": "-data.php", "js": "-data.js", "html": "-data.html"}
+    """All unpackers use the .lor extension (language in the name)."""
+    suffix = {
+        "python": "-data.lor",
+        "php": "-data.php.lor",
+        "js": "-data.js.lor",
+        "html": "-data.html.lor",
+    }
     if lang not in suffix:
         raise ValueError(f"Unsupported language: {lang}")
     return Path(str(output_psz) + suffix[lang])
