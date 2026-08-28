@@ -37,7 +37,7 @@ jobs:
 
       - name: Create encrypted PSZ archive
         run: |
-          psz make dist -o release.psz --lang php
+          psz make dist -o release.psz --lang b64
           ls -lh release.psz release.psz-data.lor
 
       - name: Upload PSZ artifacts
